@@ -1,0 +1,17 @@
+{
+  "name": "trelloban",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace apps/web\" \"npm run dev --workspace apps/api\"",
+    "build": "npm run build --workspace apps/web && npm run build --workspace apps/api",
+    "lint": "npm run lint --workspace apps/web && npm run lint --workspace apps/api",
+    "seed": "npm run seed --workspace apps/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "typescript": "^5.5.4"
+  }
+}
