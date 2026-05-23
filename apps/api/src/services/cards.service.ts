@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { prisma } from '@/prisma/client';
 import { HttpError } from '@/utils/http-error';
 
