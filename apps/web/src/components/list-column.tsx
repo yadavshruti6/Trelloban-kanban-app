@@ -5,7 +5,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Ellipsis, ListChecks, Plus, Pencil, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useKanbanStore } from '@/store/use-kanban-store';
 import type { Card as CardType, List as ListType } from '@/types/kanban';
@@ -16,7 +16,7 @@ type ListColumnProps = {
   cards: CardType[];
 };
 
-export function ListColumn({ list, cards }: ListColumnProps) {
+function ListColumnComponent({ list, cards }: ListColumnProps) {
   const createCard = useKanbanStore((state) => state.createCard);
   const deleteList = useKanbanStore((state) => state.deleteList);
   const updateListTitle = useKanbanStore((state) => state.updateListTitle);
@@ -39,21 +39,23 @@ export function ListColumn({ list, cards }: ListColumnProps) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition
+    transition,
+    willChange: 'transform'
   };
 
-  const visibleCards = cards.filter((card): card is CardType => Boolean(card));
+  const visibleCards = cards;
+
+  const cardIds = visibleCards.map((card) => card.id);
 
   return (
     <motion.div
       ref={setNodeRef}
       style={style}
-      className={cn('flex h-fit max-h-[calc(100vh-250px)] w-[280px] min-w-[280px] max-w-[280px] flex-shrink-0 flex-col self-start rounded-xl border border-white/12 bg-white/12 p-3 shadow-[0_14px_28px_rgba(15,23,42,0.18)] backdrop-blur-md transition sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] md:w-[328px] md:min-w-[328px] md:max-w-[328px]', isDragging && 'scale-[0.99] opacity-80')}
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.18 }}
+      className={cn('flex h-fit max-h-[calc(100vh-250px)] w-[280px] min-w-[280px] max-w-[280px] flex-shrink-0 flex-col self-start rounded-xl border border-white/12 bg-white/12 p-3 shadow-[0_14px_28px_rgba(15,23,42,0.18)] backdrop-blur-md transition-transform duration-200 ease-out sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] md:w-[328px] md:min-w-[328px] md:max-w-[328px] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(15,23,42,0.2)]', isDragging && 'opacity-80')}
+      initial={false}
     >
       <div className="flex items-center justify-between gap-3 px-1 pb-3">
-        <div className="flex-1 text-left" {...attributes} {...listeners}>
+        <div className="flex-1 touch-none text-left" {...attributes} {...listeners} style={{ touchAction: 'none' }}>
           <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
             <ListChecks className="h-3.5 w-3.5" />
             List
@@ -107,7 +109,7 @@ export function ListColumn({ list, cards }: ListColumnProps) {
       </div>
 
       <div ref={setDropRef} className={cn('flex max-h-[calc(100vh-368px)] flex-col gap-3 overflow-y-auto px-0 pb-3 pr-1 transition', isOver && 'rounded-lg bg-white/5')}>
-        <SortableContext items={visibleCards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
           <div className="flex flex-col gap-3">
             {visibleCards.map((card) => (
               <CardItem key={card.id} card={card} listId={list.id} />
@@ -129,3 +131,21 @@ export function ListColumn({ list, cards }: ListColumnProps) {
     </motion.div>
   );
 }
+
+export const ListColumn = memo(ListColumnComponent, (previousProps, nextProps) => {
+  if (previousProps.list !== nextProps.list) {
+    return false;
+  }
+
+  if (previousProps.cards.length !== nextProps.cards.length) {
+    return false;
+  }
+
+  for (let index = 0; index < previousProps.cards.length; index += 1) {
+    if (previousProps.cards[index] !== nextProps.cards[index]) {
+      return false;
+    }
+  }
+
+  return true;
+});

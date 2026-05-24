@@ -1,17 +1,63 @@
 "use client";
 
-import { closestCenter, DndContext, DragEndEvent, DragOverlay, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { closestCenter, closestCorners, DndContext, DragEndEvent, DragOverlay, KeyboardSensor, PointerSensor, TouchSensor, pointerWithin, useSensor, useSensors, type CollisionDetection } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import { matchesCardQuery, useActiveBoard, useKanbanStore } from '@/store/use-kanban-store';
+import { matchesCardQuery, useKanbanStore } from '@/store/use-kanban-store';
 import { ListColumn } from '@/components/list-column';
 import { CardItem } from '@/components/card-item';
 import { CardModal } from '@/components/card-modal';
+import type { Card, List } from '@/types/kanban';
+
+type ActiveDragItem = {
+  type: 'card' | 'list';
+  id: string;
+};
+
+const BOARD_COLLISION_DETECTION: CollisionDetection = (args) => {
+  const activeType = args.active.data.current?.type;
+
+  const eligibleContainers = args.droppableContainers.filter((container) => {
+    const containerType = container.data.current?.type;
+
+    if (activeType === 'list') {
+      return containerType === 'list';
+    }
+
+    if (activeType === 'card') {
+      return containerType === 'card' || containerType === 'card-list' || containerType === 'list';
+    }
+
+    return true;
+  });
+
+  if (eligibleContainers.length === 0) {
+    return [];
+  }
+
+  const filteredArgs = {
+    ...args,
+    droppableContainers: eligibleContainers
+  };
+
+  const pointerCollisions = pointerWithin(filteredArgs);
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+
+  return activeType === 'list' ? closestCenter(filteredArgs) : closestCorners(filteredArgs);
+};
+
+type VisibleList = {
+  list: List;
+  cards: Card[];
+};
 
 export function KanbanBoard() {
-  const { board, lists } = useActiveBoard();
-  const boardState = useKanbanStore((state) => state);
+  const board = useKanbanStore((state) => state.boards.find((entry) => entry.id === state.activeBoardId));
+  const listsById = useKanbanStore((state) => state.lists);
+  const cardsById = useKanbanStore((state) => state.cards);
   const labels = useKanbanStore((state) => state.labels);
   const members = useKanbanStore((state) => state.members);
   const search = useKanbanStore((state) => state.filters.search);
@@ -24,7 +70,7 @@ export function KanbanBoard() {
   const selectedCardId = useKanbanStore((state) => state.selectedCardId);
   const selectCard = useKanbanStore((state) => state.selectCard);
 
-  const [activeDragCardId, setActiveDragCardId] = useState<string | null>(null);
+  const [activeDragItem, setActiveDragItem] = useState<ActiveDragItem | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -41,14 +87,25 @@ export function KanbanBoard() {
     })
   );
 
-  const filteredLists = useMemo(() => {
+  const lists = useMemo(() => {
+    if (!board) {
+      return [] as List[];
+    }
+
+    return board.listIds
+      .map((listId) => listsById[listId])
+      .filter((list): list is List => Boolean(list))
+      .sort((left, right) => left.position - right.position);
+  }, [board, listsById]);
+
+  const filteredLists = useMemo<VisibleList[]>(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return lists
       .map((list) => {
         const cards = list.cardIds
-          .map((cardId) => boardState.cards[cardId])
+          .map((cardId) => cardsById[cardId])
           .filter((card) => {
             if (!card || card.archived) {
               return false;
@@ -101,14 +158,18 @@ export function KanbanBoard() {
             });
           });
 
-        return { ...list, cards };
+        return cards.length > 0 || search === '' || labelFilter !== null || memberFilter !== null || dueDateFilter !== 'all' || checklistFilter !== 'all'
+          ? { list, cards }
+          : null;
       })
-      .filter((list) => list.cards.length > 0 || search === '' || labelFilter !== null || memberFilter !== null || dueDateFilter !== 'all' || checklistFilter !== 'all');
-  }, [board?.title, boardState.cards, checklistFilter, dueDateFilter, labelFilter, labels, lists, memberFilter, members, search]);
+      .filter((entry): entry is VisibleList => Boolean(entry));
+  }, [board?.title, cardsById, checklistFilter, dueDateFilter, labelFilter, labels, lists, memberFilter, members, search]);
+
+  const activeCard = activeDragItem?.type === 'card' ? cardsById[activeDragItem.id] ?? null : null;
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    setActiveDragCardId(null);
+    setActiveDragItem(null);
 
     if (!over) {
       return;
@@ -161,8 +222,6 @@ export function KanbanBoard() {
     });
   }
 
-  const activeCard = activeDragCardId ? boardState.cards[activeDragCardId] : null;
-
   if (!board) {
     return (
       <section className="flex flex-1 items-center justify-center rounded-[2rem] border border-white/10 bg-white/10 p-10 text-center text-white/70 shadow-[0_18px_50px_rgba(2,6,23,0.12)] backdrop-blur-md">
@@ -174,10 +233,10 @@ export function KanbanBoard() {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={(event) => setActiveDragCardId(event.active.data.current?.type === 'card' ? String(event.active.id) : null)}
+      collisionDetection={BOARD_COLLISION_DETECTION}
+      onDragStart={(event) => setActiveDragItem({ type: event.active.data.current?.type === 'list' ? 'list' : 'card', id: String(event.active.id) })}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveDragCardId(null)}
+      onDragCancel={() => setActiveDragItem(null)}
     >
       <motion.section
         className="relative flex min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-transparent shadow-none backdrop-blur-[1px]"
@@ -188,8 +247,8 @@ export function KanbanBoard() {
         <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-2 py-3 sm:px-3 md:px-4 md:py-4">
           <SortableContext items={lists.map((list) => list.id)} strategy={horizontalListSortingStrategy}>
             <div className="flex min-w-max flex-nowrap items-start gap-4 pb-2 md:gap-5">
-              {filteredLists.map((list) => (
-                <ListColumn key={list.id} list={list} cards={list.cards} />
+              {filteredLists.map((entry) => (
+                <ListColumn key={entry.list.id} list={entry.list} cards={entry.cards} />
               ))}
               {filteredLists.length === 0 ? (
                 <div className="flex min-w-[280px] items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/10 p-5 text-center text-white shadow-[0_8px_24px_rgba(2,6,23,0.12)] backdrop-blur-md sm:min-w-[320px] md:min-w-[328px] md:p-6">
@@ -204,7 +263,7 @@ export function KanbanBoard() {
         </div>
       </motion.section>
 
-      <DragOverlay>
+      <DragOverlay adjustScale={false} dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }}>
         {activeCard ? (
           <CardItem
             card={activeCard}

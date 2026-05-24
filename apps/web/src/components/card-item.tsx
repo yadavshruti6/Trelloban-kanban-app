@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useKanbanStore } from '@/store/use-kanban-store';
 import type { Card as CardType } from '@/types/kanban';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 type CardItemProps = {
   card: CardType;
@@ -49,13 +49,12 @@ function CardFrame({ card, listId, overlay = false, highlighted = false, isDragg
   return (
     <motion.article
       className={cn(
-        'group relative overflow-hidden rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 text-[#0f172a] shadow-[0_8px_20px_rgba(15,23,42,0.09)] transition-all duration-200 will-change-transform hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(15,23,42,0.14)]',
+        'group relative overflow-hidden rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 text-[#0f172a] shadow-[0_8px_20px_rgba(15,23,42,0.09)] transition-transform duration-200 will-change-transform hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(15,23,42,0.14)]',
         highlighted && 'ring-2 ring-cyan-400/60',
         isDragging && 'scale-[1.02] opacity-60',
         overlay && 'pointer-events-none rotate-1 shadow-[0_24px_56px_rgba(15,23,42,0.26)]'
       )}
-      whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.99 }}
+      initial={false}
       transition={{ duration: 0.18, ease: 'easeOut' }}
     >
       {card.coverImage && !coverLoadFailed ? (
@@ -71,7 +70,7 @@ function CardFrame({ card, listId, overlay = false, highlighted = false, isDragg
 
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#7c6cf2] via-[#6d5df6] to-[#4f46e5] opacity-85" />
       <div className="flex items-start justify-between gap-3">
-        <button type="button" className="-ml-1 rounded-xl p-1.5 text-[#6B778C] opacity-60 transition group-hover:opacity-100" aria-label="Drag card">
+        <button type="button" className="-ml-1 rounded-xl p-1.5 text-[#6B778C] opacity-60 transition group-hover:opacity-100" aria-label="Drag card" style={{ touchAction: 'none' }}>
           <GripVertical className="h-4 w-4" />
         </button>
         <button type="button" onClick={() => openCard(card.id)} className="flex-1 text-left">
@@ -150,7 +149,7 @@ function CardFrame({ card, listId, overlay = false, highlighted = false, isDragg
   );
 }
 
-export function CardItem({ card, listId, overlay = false, highlighted = false }: CardItemProps) {
+function CardItemComponent({ card, listId, overlay = false, highlighted = false }: CardItemProps) {
   if (overlay) {
     return <CardFrame card={card} listId={listId} overlay highlighted={highlighted} />;
   }
@@ -161,9 +160,10 @@ export function CardItem({ card, listId, overlay = false, highlighted = false }:
   });
 
   const style = {
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 100 : 'auto'
+    zIndex: isDragging ? 100 : 'auto',
+    willChange: 'transform'
   };
 
   return (
@@ -172,3 +172,5 @@ export function CardItem({ card, listId, overlay = false, highlighted = false }:
     </div>
   );
 }
+
+export const CardItem = memo(CardItemComponent);
