@@ -1209,7 +1209,7 @@ export const useKanbanStore = create<KanbanStore>()(
         filters: state.filters,
         mobileSidebarOpen: state.mobileSidebarOpen
       }),
-      version: 3
+      version: 4
     }
   )
 );
