@@ -17,6 +17,9 @@ async function main() {
     data: {
       title: 'Product Roadmap',
       description: 'Primary workspace board for Trelloban.',
+      backgroundKind: 'wallpaper',
+      backgroundValue: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3',
+      backgroundOverlay: 'rgba(2, 6, 23, 0.34)',
       labels: {
         create: [
           { name: 'Design', color: '#0ea5e9' },

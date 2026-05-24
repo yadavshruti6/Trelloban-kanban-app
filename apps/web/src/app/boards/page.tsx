@@ -6,8 +6,10 @@ import { Check, Plus, Star, X } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
 import { useKanbanStore } from '@/store/use-kanban-store';
 import type { BoardBackground } from '@/types/kanban';
+import { PREMIUM_DEFAULT_BACKGROUND } from '@/lib/default-background';
 
 const boardBackgrounds: BoardBackground[] = [
+  PREMIUM_DEFAULT_BACKGROUND,
   { kind: 'gradient', value: 'linear-gradient(120deg, #7c6cf2 0%, #6d5df6 45%, #5446d8 100%)', overlay: 'rgba(15,23,42,0.22)' },
   { kind: 'gradient', value: 'linear-gradient(120deg, #0f172a 0%, #1e293b 42%, #334155 100%)', overlay: 'rgba(15,23,42,0.22)' },
   { kind: 'wallpaper', value: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80', overlay: 'rgba(15,23,42,0.34)' },

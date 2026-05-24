@@ -1,4 +1,5 @@
 import type { KanbanState } from '@/types/kanban';
+import { PREMIUM_DEFAULT_BACKGROUND } from '@/lib/default-background';
 
 export const mockKanbanState: KanbanState = {
   boards: [
@@ -11,11 +12,7 @@ export const mockKanbanState: KanbanState = {
       memberIds: ['member-1', 'member-2', 'member-3'],
       visibility: 'workspace',
       createdAt: '2026-05-18T09:00:00.000Z',
-      background: {
-        kind: 'gradient',
-        value: 'linear-gradient(120deg, #0f172a 0%, #1d4ed8 45%, #0ea5e9 100%)',
-        overlay: 'rgba(2, 6, 23, 0.36)'
-      }
+      background: PREMIUM_DEFAULT_BACKGROUND
     },
     {
       id: 'board-2',

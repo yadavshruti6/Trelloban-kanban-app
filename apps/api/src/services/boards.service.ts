@@ -4,9 +4,27 @@ import { HttpError } from '@/utils/http-error';
 
 const DEFAULT_BACKGROUND = {
   kind: 'wallpaper',
-  value: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3',
-  overlay: 'rgba(2, 6, 23, 0.28)'
+  value: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3',
+  overlay: 'rgba(2, 6, 23, 0.34)'
 };
+
+const LEGACY_DEFAULT_BACKGROUND_VALUE = 'linear-gradient(120deg, #0f172a 0%, #1d4ed8 45%, #0ea5e9 100%)';
+
+function normalizeBackground(background?: { kind?: string; value?: string; overlay?: string } | null) {
+  if (!background) {
+    return DEFAULT_BACKGROUND;
+  }
+
+  if (background.kind === 'gradient' && background.value === LEGACY_DEFAULT_BACKGROUND_VALUE) {
+    return DEFAULT_BACKGROUND;
+  }
+
+  return {
+    kind: background.kind ?? DEFAULT_BACKGROUND.kind,
+    value: background.value ?? DEFAULT_BACKGROUND.value,
+    overlay: background.overlay ?? DEFAULT_BACKGROUND.overlay
+  };
+}
 
 type SyncSnapshot = {
   board: {
@@ -42,16 +60,18 @@ type SyncSnapshot = {
 };
 
 function serializeBoard(board: any) {
+  const background = normalizeBackground({
+    kind: board.backgroundKind,
+    value: board.backgroundValue,
+    overlay: board.backgroundOverlay
+  });
+
   return {
     id: board.id,
     title: board.title,
     description: board.description,
     visibility: board.visibility,
-    background: {
-      kind: board.backgroundKind ?? DEFAULT_BACKGROUND.kind,
-      value: board.backgroundValue ?? DEFAULT_BACKGROUND.value,
-      overlay: board.backgroundOverlay ?? DEFAULT_BACKGROUND.overlay
-    },
+    background,
     listIds: board.lists.map((list: any) => list.id),
     labelIds: board.labels.map((label: any) => label.id),
     memberIds: board.members.map((member: any) => member.id),
@@ -270,15 +290,17 @@ export async function syncBoardState(boardId: string, snapshot: SyncSnapshot) {
     await tx.label.deleteMany({ where: { boardId } });
     await tx.member.deleteMany({ where: { boardId } });
 
+      const normalizedBackground = normalizeBackground(snapshot.board.background);
+
     await tx.board.update({
       where: { id: boardId },
       data: {
         title: snapshot.board.title,
         description: snapshot.board.description ?? null,
         visibility: snapshot.board.visibility ?? 'workspace',
-        backgroundKind: snapshot.board.background?.kind ?? DEFAULT_BACKGROUND.kind,
-        backgroundValue: snapshot.board.background?.value ?? DEFAULT_BACKGROUND.value,
-        backgroundOverlay: snapshot.board.background?.overlay ?? DEFAULT_BACKGROUND.overlay
+        backgroundKind: normalizedBackground.kind,
+        backgroundValue: normalizedBackground.value,
+        backgroundOverlay: normalizedBackground.overlay
       }
     });
 

@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { arrayMove } from '@dnd-kit/sortable';
 import { mockKanbanState } from '@/lib/mock-data';
+import { normalizeBoardBackground, PREMIUM_DEFAULT_BACKGROUND } from '@/lib/default-background';
 import { createBoardRemote, createCardRemote, deleteBoardRemote, fetchWorkspaceRemote, reorderCardsRemote, reorderListsRemote, syncBoardStateRemote, updateBoardRemote, updateCardRemote } from '@/services/kanban-api';
 import type { Board, BoardBackground, BoardVisibility, Card, Comment, Id, KanbanState, List, Member } from '@/types/kanban';
 
@@ -101,11 +102,7 @@ type KanbanStore = KanbanState & {
   globalSearch: (query: string) => SearchResult[];
 };
 
-const DEFAULT_BACKGROUND: BoardBackground = {
-  kind: 'wallpaper',
-  value: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3',
-  overlay: 'rgba(2, 6, 23, 0.28)'
-};
+const DEFAULT_BACKGROUND: BoardBackground = PREMIUM_DEFAULT_BACKGROUND;
 
 const boardSyncTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -229,7 +226,7 @@ function createId(prefix: string) {
 function normalizeBoard(board: Board): Board {
   return {
     ...board,
-    background: board.background ?? DEFAULT_BACKGROUND,
+    background: normalizeBoardBackground(board.background),
     visibility: board.visibility ?? 'workspace',
     createdAt: board.createdAt ?? new Date().toISOString()
   };
@@ -327,7 +324,7 @@ export const useKanbanStore = create<KanbanStore>()(
         set((state) => {
           const boards = snapshot.boards.map((board) => ({
             ...board,
-            background: (board.background ?? DEFAULT_BACKGROUND) as BoardBackground,
+            background: normalizeBoardBackground(board.background),
             visibility: (board.visibility as BoardVisibility) ?? 'workspace',
             createdAt: board.createdAt ?? new Date().toISOString()
           }));

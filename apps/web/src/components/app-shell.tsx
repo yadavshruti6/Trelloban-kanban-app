@@ -10,6 +10,7 @@ import { OnboardingModal } from '@/components/onboarding-modal';
 import { ToastStack } from '@/components/toast-stack';
 import { useActiveBoard } from '@/store/use-kanban-store';
 import { useKanbanStore } from '@/store/use-kanban-store';
+import { createBoardBackgroundStyle, PREMIUM_DEFAULT_BACKGROUND } from '@/lib/default-background';
 
 type AppShellProps = {
   children?: ReactNode;
@@ -30,22 +31,14 @@ export function AppShell({ children }: AppShellProps) {
     void hydrateWorkspace().catch(() => undefined);
   }, [hydrateWorkspace]);
 
-  const backgroundStyle = board?.background?.kind === 'custom' || board?.background?.kind === 'wallpaper'
-    ? {
-        backgroundImage: `linear-gradient(180deg, rgba(2, 6, 23, 0.26), rgba(2, 6, 23, 0.34)), url(${board.background.value})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }
-    : {
-        backgroundImage: board?.background?.value ?? 'linear-gradient(120deg, #0f172a 0%, #1d4ed8 45%, #0ea5e9 100%)'
-      };
+  const activeBoardBackground = board?.background ?? PREMIUM_DEFAULT_BACKGROUND;
+  const backgroundStyle = {
+    ...createBoardBackgroundStyle(activeBoardBackground),
+    backgroundAttachment: 'fixed'
+  };
 
   const onboardingBackgroundStyle = {
-    backgroundImage:
-      'linear-gradient(180deg, rgba(2, 6, 23, 0.18), rgba(2, 6, 23, 0.30)), url(https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
+    ...createBoardBackgroundStyle(PREMIUM_DEFAULT_BACKGROUND),
     backgroundAttachment: 'fixed'
   };
 
@@ -71,7 +64,8 @@ export function AppShell({ children }: AppShellProps) {
         {showSplash ? (
           <motion.div
             key="splash"
-            className="absolute inset-0 z-30 flex items-center justify-center bg-[#0b5cab]"
+            className="absolute inset-0 z-30 flex items-center justify-center"
+            style={createBoardBackgroundStyle(PREMIUM_DEFAULT_BACKGROUND)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}

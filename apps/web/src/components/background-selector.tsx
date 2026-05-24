@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, ImagePlus } from 'lucide-react';
 import { useKanbanStore } from '@/store/use-kanban-store';
+import { PREMIUM_DEFAULT_BACKGROUND } from '@/lib/default-background';
 
 const PRESETS = [
   {
@@ -88,7 +89,7 @@ export function BackgroundSelector({ onClose }: { onClose: () => void }) {
           <span>{uploading ? 'Uploading...' : 'Upload image'}</span>
           <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
         </label>
-        <button type="button" onClick={() => { updateBoardBackground(activeBoardId, { kind: 'gradient', value: 'linear-gradient(120deg,#0f172a 0%,#1d4ed8 45%,#0ea5e9 100%)', overlay: 'rgba(2,6,23,0.36)' }); onClose(); }} className="ml-auto rounded-md bg-white/8 px-3 py-2 text-sm text-white hover:bg-white/16">Reset</button>
+        <button type="button" onClick={() => { updateBoardBackground(activeBoardId, PREMIUM_DEFAULT_BACKGROUND); onClose(); }} className="ml-auto rounded-md bg-white/8 px-3 py-2 text-sm text-white hover:bg-white/16">Reset</button>
       </div>
     </div>
   );
