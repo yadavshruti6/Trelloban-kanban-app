@@ -1201,7 +1201,7 @@ export const useKanbanStore = create<KanbanStore>()(
       }
     }),
     {
-      name: 'trelloban-store-v3',
+      name: 'trelloban-store-v4',
       partialize: (state) => ({
         activeBoardId: state.activeBoardId,
         selectedCardId: state.selectedCardId,
