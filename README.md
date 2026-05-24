@@ -4,6 +4,7 @@
 
 ![Trelloban Banner](https://img.shields.io/badge/Trelloban-Kanban%20Workspace-0f172a?style=for-the-badge)
 
+
 A production-grade Trello-style Kanban workspace built with modern full-stack technologies.
 
 ### ⚡ Built for productivity, scalability, and recruiter-grade presentation.
@@ -25,6 +26,16 @@ A production-grade Trello-style Kanban workspace built with modern full-stack te
 It provides a seamless drag-and-drop task management experience with persistent MySQL storage, smooth animations, optimistic updates, and scalable monorepo architecture.
 
 ---
+
+##  🚀 Live Application Preview
+
+<p align="center">
+  <img src="./assets/Demo_video.gif" width="100%" />
+</p>
+
+---
+
+
 
 # 🎯 Recruiter Highlights
 
