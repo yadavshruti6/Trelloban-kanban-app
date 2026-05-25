@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { asyncHandler } from '@/utils/async-handler';
-import * as boardsService from '@/services/boards.service';
+import { asyncHandler } from '../utils/async-handler';
+import * as boardsService from '../services/boards.service';
 
 export const getBoards = asyncHandler(async (_request: Request, response: Response) => {
   const boards = await boardsService.listBoards();

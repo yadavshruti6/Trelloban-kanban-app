@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getBoard, getBoards, patchBoard, postBoard, putBoardState, removeBoard } from '@/controllers/boards.controller';
-import { postList } from '@/controllers/lists.controller';
+import { getBoard, getBoards, patchBoard, postBoard, putBoardState, removeBoard } from '../controllers/boards.controller';
+import { postList } from '../controllers/lists.controller';
 
 export const boardsRouter = Router();
 

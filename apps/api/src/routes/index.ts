@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { boardsRouter } from '@/routes/boards.routes';
-import { cardsRouter } from '@/routes/cards.routes';
+import { boardsRouter } from './boards.routes';
+import { cardsRouter } from './cards.routes';
 
 export const apiRouter = Router();
 

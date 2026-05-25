@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { asyncHandler } from '@/utils/async-handler';
-import * as cardsService from '@/services/cards.service';
+import { asyncHandler } from '../utils/async-handler';
+import * as cardsService from '../services/cards.service';
 
 export const postCard = asyncHandler(async (request: Request, response: Response) => {
   const card = await cardsService.createCard(

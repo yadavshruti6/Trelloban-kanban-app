@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { HttpError } from '@/utils/http-error';
+import { HttpError } from '../utils/http-error';
 
 export function errorHandler(error: unknown, request: Request, response: Response, next: NextFunction) {
   if (response.headersSent) {

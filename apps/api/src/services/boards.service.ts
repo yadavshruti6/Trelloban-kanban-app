@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { prisma } from '@/prisma/client';
-import { HttpError } from '@/utils/http-error';
+import { prisma } from '../prisma/client';
+import { HttpError } from '../utils/http-error';
 
 const DEFAULT_BACKGROUND = {
   kind: 'wallpaper',

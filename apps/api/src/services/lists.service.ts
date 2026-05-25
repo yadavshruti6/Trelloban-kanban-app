@@ -1,5 +1,5 @@
-import { prisma } from '@/prisma/client';
-import { HttpError } from '@/utils/http-error';
+import { prisma } from '../prisma/client';
+import { HttpError } from '../utils/http-error';
 
 export async function createList(boardId: string, title: string) {
   const board = await prisma.board.findUnique({ where: { id: boardId } });

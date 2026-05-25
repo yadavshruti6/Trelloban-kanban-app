@@ -18,8 +18,8 @@ import {
 	postChecklist,
 	postLabel,
 	removeCard
-} from '@/controllers/cards.controller';
-import { validate } from '@/middleware/validate';
+} from '../controllers/cards.controller';
+import { validate } from '../middleware/validate';
 
 export const cardsRouter = Router();
 

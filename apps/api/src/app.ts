@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { apiRouter } from '@/routes';
-import { notFound } from '@/middleware/not-found';
-import { errorHandler } from '@/middleware/error-handler';
+import { apiRouter } from './routes';
+import { notFound } from './middleware/not-found';
+import { errorHandler } from './middleware/error-handler';
 
 export function createApp() {
   const app = express();
